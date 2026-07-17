@@ -1,5 +1,22 @@
 declare module "node-id3" {
    namespace NodeID3 {
+      export interface AttachedPicture {
+         mime: string,
+         type: {
+            /**
+             * {@link TagConstants.AttachedPicture.PictureType }
+             */
+            id: number,
+            /**
+             * @deprecated Provided as information when a tag is read,
+             * unused when a tag is written.
+             */
+            name?: string
+         },
+         description: string,
+         imageBuffer: Buffer
+      }
+
       export interface Tags {
          /**
           * The 'Album/Movie/Show title' frame is intended for the title of the recording(/source of sound) which the audio in the file is taken from.
@@ -352,25 +369,11 @@ declare module "node-id3" {
           *
           * Filename or image data.
           */
-         image?: string | {
-            mime: string
-            /**
-             * See https://en.wikipedia.org/wiki/ID3#ID3v2_embedded_image_extension
-             */
-            type: {
-               /**
-                * {@link TagConstants.AttachedPicture.PictureType }
-                */
-               id: number,
-               /**
-                * @deprecated Provided as an information when a tag is read,
-                * unused when a tag is written.
-                */
-               name?: string
-            },
-            description: string,
-            imageBuffer: Buffer,
-         },
+         image?: string | Buffer | AttachedPicture,
+         /**
+          * Complete ordered collection of `APIC` (attached picture) frames.
+          */
+         images?: AttachedPicture[],
          popularimeter?: {
             email: string,
             /**

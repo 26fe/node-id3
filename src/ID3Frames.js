@@ -42,6 +42,21 @@ module.exports.GENERIC_URL = {
 }
 
 module.exports.APIC = {
+    validate: (data) => {
+        if(!data || typeof data !== 'object' || data instanceof Buffer || Array.isArray(data)) {
+            throw new TypeError('images must contain structured attached picture objects')
+        }
+        if(!(data.imageBuffer instanceof Buffer)) {
+            throw new TypeError('images entries must contain an imageBuffer Buffer')
+        }
+        if(typeof data.mime !== 'string' || typeof data.description !== 'string') {
+            throw new TypeError('images entries must contain string mime and description values')
+        }
+        if(!data.type || !Number.isInteger(data.type.id) ||
+            data.type.id < 0 || data.type.id >= ID3Definitions.APIC_TYPES.length) {
+            throw new TypeError('images entries must contain a valid picture type id')
+        }
+    },
     create: (data) => {
         try {
             if (data instanceof Buffer) {

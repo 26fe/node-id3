@@ -73,6 +73,41 @@ NodeID3.update(tags, filepath, options, function(err, buffer) {  })
 NodeID3.update(tags, filebuffer, options, function(err, buffer) {  })
 ```
 
+### Multiple attached pictures
+
+`image` remains the backward-compatible singular `APIC` value. When a tag contains multiple attached pictures,
+`images` contains the complete collection in file order while `image` contains the last picture.
+
+```javascript
+const tags = NodeID3.read(fileOrBuffer)
+console.log(tags.image)  // last APIC frame
+console.log(tags.images) // every APIC frame in order
+```
+
+Create or write all attached pictures with structured picture objects:
+
+```javascript
+NodeID3.write({ images: [frontCover, backCover] }, fileOrBuffer)
+```
+
+To add or remove one picture without frame-replacement options, read all supported tags, edit the collection, and
+rewrite those tags:
+
+```javascript
+const current = NodeID3.read(fileOrBuffer)
+const { image, images: currentImages = [], raw, ...otherTags } = current
+const images = [...currentImages]
+
+images.push(newPicture) // add one picture
+// images.splice(index, 1) // remove one picture
+
+NodeID3.write({ ...otherTags, images }, fileOrBuffer)
+```
+
+This rewrite preserves tags that node-id3 can read and write, but cannot preserve unsupported or unknown frames.
+An empty `images` array writes no attached pictures. Do not supply `image` and `images` together. `removeTags` removes
+the complete ID3 tag, not one picture.
+
 ### Create tags as buffer
 
 The create method will return a buffer of your ID3-Tag. You can use it to e.g. write it into a file yourself instead of using the write method.

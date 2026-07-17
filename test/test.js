@@ -1201,6 +1201,7 @@ describe('Cross tests jsmediatags', function() {
         const read = NodeID3.read(tagsBuffer)
 
         delete read.raw
+        delete read.images
         delete read.chapter[0].tags.raw
         delete read.tableOfContents[0].tags.raw
         read.comment.text = parseInt(read.comment.text)
@@ -1215,6 +1216,7 @@ describe('Cross tests jsmediatags', function() {
         const read = NodeID3.read(tagsBuffer)
 
         delete read.raw
+        delete read.images
         assert.deepStrictEqual(read.chapter[0].tags.raw, {})
         delete read.chapter[0].tags
         read.comment.text = parseInt(read.comment.text)
