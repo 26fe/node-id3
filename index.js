@@ -85,7 +85,16 @@ function writeSync(tags, filebuffer) {
  * @returns {boolean|Buffer|Error}
  */
 function write(tags, filebuffer, fn) {
-    const completeTags = create(tags)
+    let completeTags
+    try {
+        completeTags = create(tags)
+    } catch(error) {
+        if(isFunction(fn)) {
+            fn(error)
+            return undefined
+        }
+        throw error
+    }
 
     if(isFunction(fn)) {
         return writeAsync(completeTags, filebuffer, fn)

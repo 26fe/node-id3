@@ -13,7 +13,22 @@ function createBuffersFromTags(tags) {
     if(!tags) {
         return frames
     }
+    const hasImages = Object.prototype.hasOwnProperty.call(tags, 'images')
+    const hasImage = Object.prototype.hasOwnProperty.call(tags, 'image') ||
+        Object.prototype.hasOwnProperty.call(tags, 'APIC')
+    if(hasImages && hasImage) {
+        throw new TypeError('image and images cannot be supplied together')
+    }
+    if(hasImages) {
+        if(!Array.isArray(tags.images)) {
+            throw new TypeError('images must be an array')
+        }
+        tags.images.forEach((image) => ID3Frames.APIC.validate(image))
+    }
     const rawObject = Object.keys(tags).reduce((acc, val) => {
+        if(val === 'images') {
+            return acc
+        }
         if(ID3Definitions.FRAME_IDENTIFIERS.v3[val] !== undefined) {
             acc[ID3Definitions.FRAME_IDENTIFIERS.v3[val]] = tags[val]
         } else if(ID3Definitions.FRAME_IDENTIFIERS.v4[val] !== undefined) {
@@ -56,6 +71,16 @@ function createBuffersFromTags(tags) {
             frames.push(frame)
         }
     })
+
+    if(hasImages) {
+        tags.images.forEach((image) => {
+            const frame = ID3Frames.APIC.create(image, 3)
+            if(frame instanceof Error) {
+                throw frame
+            }
+            frames.push(frame)
+        })
+    }
 
     return frames
 }
@@ -190,6 +215,7 @@ function decompressFrame(frame) {
 function getTagsFromFrames(frames, ID3Version, options = {}) {
     const tags = { }
     const raw = { }
+    const images = []
 
     frames.forEach((frame) => {
         let frameIdentifier
@@ -231,6 +257,10 @@ function getTagsFromFrames(frames, ID3Version, options = {}) {
             return
         }
 
+        if(ID3Version !== 2 && frameIdentifier === 'APIC' && !options.onlyRaw) {
+            images.push(decoded)
+        }
+
         if(ID3Util.getSpecOptions(frameIdentifier, ID3Version).multiple) {
             if(!options.onlyRaw) {
                 if(!tags[identifier]) {
@@ -253,6 +283,10 @@ function getTagsFromFrames(frames, ID3Version, options = {}) {
             }
         }
     })
+
+    if(images.length > 0) {
+        tags.images = images
+    }
 
     if(options.onlyRaw) {
         return raw
