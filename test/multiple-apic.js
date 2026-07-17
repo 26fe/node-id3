@@ -144,4 +144,25 @@ describe('NodeID3 multiple APIC core support', function() {
             ])
         })
     })
+
+    describe('frame replacement integration', function() {
+        it('replaces and removes the complete APIC collection', function() {
+            const original = NodeID3.create({ title: 'Title', images: pictures })
+            const retained = [pictures[0], pictures[2]]
+            const replaced = NodeID3.update(
+                { images: retained },
+                original,
+                { replaceFrames: ['APIC'] }
+            )
+
+            assert.deepStrictEqual(NodeID3.read(replaced).images, retained)
+            const removed = NodeID3.update(
+                { images: pictures },
+                replaced,
+                { removeFrames: ['APIC'] }
+            )
+            assert.strictEqual(NodeID3.read(removed).images, undefined)
+            assert.strictEqual(NodeID3.read(removed).title, 'Title')
+        })
+    })
 })

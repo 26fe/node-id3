@@ -64,13 +64,35 @@ NodeID3.update(tags, filebuffer, function(err, buffer) {  })
 // Possible options
 const options = {
     include: ['TALB', 'TIT2'],    // only read the specified tags (default: all)
-    exclude: ['APIC']            // don't read the specified tags (default: [])
+    exclude: ['APIC'],            // don't read the specified tags (default: [])
+    replaceFrames: ['SYLT'],      // completely replace these frames with values from tags
+    removeFrames: ['PRIV']        // remove these frames, even when absent from tags
 }
 
 NodeID3.update(tags, filepath, options)
 const success = NodeID3.update(tags, filebuffer, options)
 NodeID3.update(tags, filepath, options, function(err, buffer) {  })
 NodeID3.update(tags, filebuffer, options, function(err, buffer) {  })
+```
+
+Updates merge with existing frames by default. Multiple-value frames can instead be replaced completely:
+
+```javascript
+NodeID3.update({
+    synchronisedLyrics: [{
+        language: 'eng',
+        timeStampFormat: NodeID3.TagConstants.TimeStampFormat.MILLISECONDS,
+        contentType: NodeID3.TagConstants.SynchronisedLyrics.ContentType.LYRICS,
+        shortText: 'Synchronized lyrics',
+        synchronisedText: [{ text: 'First line', timeStamp: 1234 }]
+    }]
+}, fileOrBuffer, { replaceFrames: ['SYLT'] })
+```
+
+Frames can also be removed without supplying a replacement value:
+
+```javascript
+NodeID3.update({}, fileOrBuffer, { removeFrames: ['SYLT'] })
 ```
 
 ### Multiple attached pictures
@@ -90,23 +112,20 @@ Create or write all attached pictures with structured picture objects:
 NodeID3.write({ images: [frontCover, backCover] }, fileOrBuffer)
 ```
 
-To add or remove one picture without frame-replacement options, read all supported tags, edit the collection, and
-rewrite those tags:
+To add or remove one picture, read the collection, edit it, and replace the complete APIC frame set:
 
 ```javascript
 const current = NodeID3.read(fileOrBuffer)
-const { image, images: currentImages = [], raw, ...otherTags } = current
-const images = [...currentImages]
+const images = [...(current.images || [])]
 
 images.push(newPicture) // add one picture
 // images.splice(index, 1) // remove one picture
 
-NodeID3.write({ ...otherTags, images }, fileOrBuffer)
+NodeID3.update({ images }, fileOrBuffer, { replaceFrames: ['APIC'] })
 ```
 
-This rewrite preserves tags that node-id3 can read and write, but cannot preserve unsupported or unknown frames.
-An empty `images` array writes no attached pictures. Do not supply `image` and `images` together. `removeTags` removes
-the complete ID3 tag, not one picture.
+An empty `images` array with `replaceFrames: ['APIC']` removes every attached picture while preserving other tags.
+Do not supply `image` and `images` together. `removeTags` removes the complete ID3 tag, not one picture.
 
 ### Create tags as buffer
 
