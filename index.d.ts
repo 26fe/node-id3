@@ -711,12 +711,43 @@ declare module "node-id3" {
             }
          }
       }
+
+      /**
+       * ID3v1 tag management
+       */
+      export type Id3v1Truncation = "truncate" | "error"
+      export interface Id3v1WriteOptions {
+         id3v1Truncation?: Id3v1Truncation
+      }
+      export interface Id3v1Tag {
+         title?: string,
+         artist?: string,
+         album?: string,
+         year?: string,
+         comment?: string,
+         trackNumber?: number,
+         genreId?: number,
+         version: "1.0" | "1.1"
+      }
+      export interface Id3v1WriteTag {
+         title?: string,
+         artist?: string,
+         album?: string,
+         year?: string,
+         comment?: string,
+         trackNumber?: number,
+         genreId?: number,
+         version?: "1.0" | "1.1"
+      }
+
       export function write(tags: Tags, filebuffer: Buffer): Buffer
       export function write(tags: Tags, filebuffer: Buffer, fun: (err: null, buffer: Buffer) => void): void
       export function write(tags: Tags, filepath: string): true | Error
       export function write(tags: Tags, filepath: string, fn: (err: NodeJS.ErrnoException | Error | null) => void): void
+
       export function create(tags: Tags): Buffer
       export function create(tags: Tags, fn: (buffer: Buffer) => void): void
+
       export function read(filebuffer: string | Buffer): Tags
       export function read(filebuffer: string | Buffer, options: Object): Tags
       export function read(filebuffer: string | Buffer, fn: (err: NodeJS.ErrnoException | null, tags: Tags | null) => void): void
@@ -729,16 +760,42 @@ declare module "node-id3" {
       export function update(tags: Tags, filebuffer: Buffer, options: UpdateOptions, fn: (err: NodeJS.ErrnoException | Error | null, buffer?: Buffer) => void): void
       export function removeTags(filepath: string): true | Error
       export function removeTags(filepath: string, fn: (err: NodeJS.ErrnoException | Error | null) => void): void
+
+      export function readId3v1(filebuffer: string | Buffer): Id3v1Tag | null
+      export function readId3v1(filebuffer: string | Buffer, fn: (err: NodeJS.ErrnoException | Error | null, tag: Id3v1Tag | null) => void): void
+
+      export function writeId3v1(tag: Id3v1WriteTag, filebuffer: Buffer, options?: Id3v1WriteOptions): Buffer
+      export function writeId3v1(tag: Id3v1WriteTag, filepath: string, options?: Id3v1WriteOptions): true | Error
+      export function writeId3v1(tag: Id3v1WriteTag, filebuffer: Buffer, fn: (err: NodeJS.ErrnoException | Error | null, buffer?: Buffer) => void): void
+      export function writeId3v1(tag: Id3v1WriteTag, filepath: string, fn: (err: NodeJS.ErrnoException | Error | null) => void): void
+      export function writeId3v1(tag: Id3v1WriteTag, filebuffer: Buffer, options: Id3v1WriteOptions, fn: (err: NodeJS.ErrnoException | Error | null, buffer?: Buffer) => void): void
+      export function writeId3v1(tag: Id3v1WriteTag, filepath: string, options: Id3v1WriteOptions, fn: (err: NodeJS.ErrnoException | Error | null) => void): void
+
+      export function removeId3v1(filebuffer: Buffer): Buffer
+      export function removeId3v1(filepath: string): true | Error
+      export function removeId3v1(filebuffer: Buffer, fn: (err: NodeJS.ErrnoException | Error | null, buffer?: Buffer) => void): void
+      export function removeId3v1(filepath: string, fn: (err: NodeJS.ErrnoException | Error | null) => void): void
+
       export const Promise: {
          write(tags: Tags, filebuffer: Buffer) : Promise<Buffer>,
          write(tags: Tags, filepath: string) : Promise<boolean>,
+
          create(tags: Tags) : Promise<Buffer>,
+
          read(filebuffer: Buffer, options?: Object) : Promise<Tags>,
          read(filepath: string, options?: Object) : Promise<Tags>,
          update(tags: Tags, filebuffer: Buffer, options?: UpdateOptions) : Promise<Buffer>,
          update(tags: Tags, filepath: string, options?: UpdateOptions) : Promise<boolean>,
+         removeId3v1(filebuffer: Buffer) : Promise<Buffer>,
+         removeId3v1(filepath: string) : Promise<boolean>,
+
          removeTags(filepath: string) : Promise<Buffer>,
-         removeTags(filebuffer: Buffer) : Promise<Buffer>
+         removeTags(filebuffer: Buffer) : Promise<Buffer>,
+
+         readId3v1(filebuffer: string | Buffer) : Promise<Id3v1Tag | null>,
+
+         writeId3v1(tag: Id3v1WriteTag, filebuffer: Buffer, options?: Id3v1WriteOptions) : Promise<Buffer>,
+         writeId3v1(tag: Id3v1WriteTag, filepath: string, options?: Id3v1WriteOptions) : Promise<boolean>,
       }
    }
    export = NodeID3
